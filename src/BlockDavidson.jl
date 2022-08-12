@@ -1,6 +1,18 @@
 module BlockDavidson
 using LinearAlgebra
 using Printf
+using InteractiveUtils
+
+# solve is exported by several packages.
+# check if its defined, and if so, extend it
+if @isdefined(solve)
+    println(" Solve already defined: extend it. ", @which solve)
+    a = @which solve
+    eval(Meta.parse("import $a.solve"))
+end    
+export solve
+export Davidson
+
 
 mutable struct Davidson
     op 
@@ -199,9 +211,5 @@ end
 #    new_v = zeros(solver.dim, nroots)
 #    for r in 1:nroots
 #end
-
-
-export solve
-export Davidson
 
 end
