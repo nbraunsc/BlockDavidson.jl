@@ -3,6 +3,12 @@ uuid = "b4c031f8-e7c9-4879-896c-063a10ff8103"
 authors = ["Nick Mayhall <nmayhall@vt.edu> and contributors"]
 version = "0.1.0"
 
+[deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+LinearMaps = "7a12625a-238d-50fd-b39a-03d52299707e"
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+
 [compat]
 julia = "1.7"
 
