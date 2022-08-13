@@ -38,12 +38,14 @@ mutable struct Davidson
 end
 
 function Davidson(op; max_iter=100, max_ss_vecs=8, tol=1e-8, nroots=1, v0=nothing, lindep_thresh=1e-10)
-    size(op)[1] == size(op)[2] || throw(DimensionError())
+    size(op)[1] == size(op)[2] || throw(DimensionMismatch)
     dim = size(op)[1]
     if v0==nothing
-        v0 = rand(dim,nroots)
-        S = v0'*v0
-        v0 = v0*inv(sqrt(S))
+        F = qr(rand(dim,nroots))
+        v0 = Matrix(F.Q)
+    else
+        size(v0,1) == size(op,1) || throw(DimensionMismatch)
+        size(v0,2) == nroots || throw(DimensionMismatch)
     end
     #display(v0'*v0)
     return Davidson(op, 

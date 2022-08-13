@@ -34,8 +34,12 @@ using LinearMaps
              -16.83937885452674
             ]
     # now with more settings specified and roots
-    dav = Davidson(lmap; max_iter=200, max_ss_vecs=8, tol=1e-6, nroots=6, v0=nothing, lindep_thresh=1e-10)
+    dav = Davidson(lmap; max_iter=200, max_ss_vecs=8, tol=1e-6, nroots=6)
     e,v = solve(dav)
     @test all(isapprox.(e, e_ref, atol=1e-10))
 
+    display(v'*Matrix(lmap*v))
+    # now test with initial guess
+    e,v = solve(Davidson(lmap; max_iter=2, max_ss_vecs=8, tol=1e-8, nroots=6, v0=v))
+    @test all(isapprox.(e, e_ref, atol=1e-10))
 end
