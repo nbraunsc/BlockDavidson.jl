@@ -12,6 +12,7 @@ using InteractiveUtils
 #    eval(Meta.parse("import $a.solve"))
 #end    
 export solve
+export LinOpMat 
 export Davidson
 
 
