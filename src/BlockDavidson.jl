@@ -5,11 +5,12 @@ using InteractiveUtils
 
 # solve is exported by several packages.
 # check if its defined, and if so, extend it
-if @isdefined(solve)
-    println(" Solve already defined: extend it. ", @which solve)
-    a = @which solve
-    eval(Meta.parse("import $a.solve"))
-end    
+# this doesn't work
+#if @isdefined(solve)
+#    println(" Solve already defined: extend it. ", @which solve)
+#    a = @which solve
+#    eval(Meta.parse("import $a.solve"))
+#end    
 export solve
 export Davidson
 
@@ -63,6 +64,19 @@ function Davidson(op; max_iter=100, max_ss_vecs=8, tol=1e-8, nroots=1, v0=nothin
                     1.0,
                     lindep_thresh)
 end
+
+mutable struct LinOpMat{T} <: AbstractMatrix{T} 
+    matvec
+    dim::Int
+    sym::Bool
+end
+
+Base.size(lop::LinOpMat{T}) where {T} = return (lop.dim,lop.dim)
+Base.:(*)(lop::LinOpMat{T}, v::AbstractVector{T}) where {T} = return lop.matvec(v)
+Base.:(*)(lop::LinOpMat{T}, v::AbstractMatrix{T}) where {T} = return lop.matvec(v)
+issymmetric(lop::LinOpMat{T}) where {T} = return lop.sym
+    
+
 
 
 function print_iter(solver::Davidson)
