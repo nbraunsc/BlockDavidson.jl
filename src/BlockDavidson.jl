@@ -3,18 +3,9 @@ using LinearAlgebra
 using Printf
 using InteractiveUtils
 
-# solve is exported by several packages.
-# check if its defined, and if so, extend it
-# this doesn't work
-#if @isdefined(solve)
-#    println(" Solve already defined: extend it. ", @which solve)
-#    a = @which solve
-#    eval(Meta.parse("import $a.solve"))
-#end    
-export solve
 export LinOpMat 
 export Davidson
-
+export eigs
 
 mutable struct Davidson
     op 
@@ -194,7 +185,7 @@ function iteration(solver::Davidson; Adiag=nothing, iprint=0)
     return new
 end
 
-function solve(solver::Davidson; Adiag=nothing, iprint=0)
+function eigs(solver::Davidson; Adiag=nothing, iprint=0)
 
     for iter = 1:solver.max_iter
         #@btime $solver.vec_curr = $iteration($solver)

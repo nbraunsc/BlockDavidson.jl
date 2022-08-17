@@ -14,14 +14,14 @@ using LinearMaps
     #display(F.values)
 
     dav = Davidson(A)
-    e,v = solve(dav)
+    e,v = eigs(dav)
     e_ref = -18.260037795157675
     @test isapprox(e[1], -18.260037795157675)
 
     lmap = LinearMap(A)
 
     dav = Davidson(lmap)
-    e,v = solve(dav)
+    e,v = eigs(dav)
     e_ref = -18.260037795157675
     @test isapprox(e[1], -18.260037795157675)
 
@@ -35,11 +35,11 @@ using LinearMaps
             ]
     # now with more settings specified and roots
     dav = Davidson(lmap; max_iter=200, max_ss_vecs=8, tol=1e-6, nroots=6)
-    e,v = solve(dav)
+    e,v = eigs(dav)
     @test all(isapprox.(e, e_ref, atol=1e-10))
 
     display(v'*Matrix(lmap*v))
     # now test with initial guess
-    e,v = solve(Davidson(lmap; max_iter=2, max_ss_vecs=8, tol=1e-8, nroots=6, v0=v))
+    e,v = eigs(Davidson(lmap; max_iter=2, max_ss_vecs=8, tol=1e-8, nroots=6, v0=v))
     @test all(isapprox.(e, e_ref, atol=1e-10))
 end
