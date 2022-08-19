@@ -10,7 +10,7 @@ Simple code to solve for the eigenvectors/eigenvalues of a matrix or `LinearMap`
 ### Explicit matrix diagonalization
 ```julia
 dav = Davidson(A)
-e,v = solve(dav)
+e,v = eigs(dav)
 ```
 ### Matrix-free diagonalization 
 We can also diagonalize an implicit matrix by defining a function `matvec` that algorithmically implments the action of `A` onto a vector or set of vectors. We can also specify several settings, including providing an initial guess `v_guess`:
