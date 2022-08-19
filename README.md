@@ -23,5 +23,5 @@ end
 
 lmap = LinearMap(matvec)
 dav = Davidson(lmap; max_iter=200, max_ss_vecs=8, tol=1e-6, nroots=6, v0=v_guess, lindep_thresh=1e-10)
-e,v = solve(dav)
+e,v = eigs(dav)
 ```
