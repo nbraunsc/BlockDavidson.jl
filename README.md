@@ -12,6 +12,11 @@ Simple code to solve for the eigenvectors/eigenvalues of a matrix or `LinearMap`
 dav = Davidson(A)
 e,v = eigs(dav)
 ```
+to use the diagonal preconditioner specify as argument to eigs
+```julia
+e,v = eigs(dav, Adiag=diag(A))
+```
+
 ### Matrix-free diagonalization 
 We can also diagonalize an implicit matrix by defining a function `matvec` that algorithmically implments the action of `A` onto a vector or set of vectors. We can also specify several settings, including providing an initial guess `v_guess`:
 ```julia
