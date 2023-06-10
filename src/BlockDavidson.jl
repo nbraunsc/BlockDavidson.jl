@@ -135,89 +135,6 @@ function apply_diagonal_precond!(res_s::Vector{T}, Adiag::Vector{T}, denom::T) w
 end
 
 function iteration(solver::Davidson; Adiag=nothing, iprint=0, precond_start_thresh=1.0)
-    
-    #
-    # perform sig_curr = A*vec_curr 
-    solver.sig_curr = Matrix(solver.op * solver.vec_curr)
-   
-    #
-    # add these new vectors to previous quantities
-    solver.sig_prev = hcat(solver.sig_prev, solver.sig_curr)
-    solver.vec_prev = hcat(solver.vec_prev, solver.vec_curr)
-   
-    #
-    # Check orthogonality
-    ss_metric = solver.vec_prev'*solver.vec_prev
-    solver.lindep = abs(1.0 - det(ss_metric))
-
-    #
-    # form H in current subspace
-    Hss = solver.vec_prev' * solver.sig_prev
-    F = eigen(Hss)
-    #ritz_e = F.values[1:solver.nroots]
-    #ritz_v = F.vectors[:,1:solver.nroots]
-    ritz_e = F.values
-    ritz_v = F.vectors
-    ss_size = length(F.values)
-    if ss_size >= solver.max_ss_vecs
-        ritz_v = ritz_v[:,sortperm(ritz_e)][:,1:solver.nroots]
-        ritz_e = ritz_e[sortperm(ritz_e)][1:1:solver.nroots]
-        #ritz_v = ritz_v[:,sortperm(ritz_e)][:,1:solver.max_ss_vecs]
-        #ritz_e = ritz_e[sortperm(ritz_e)][1:1:solver.max_ss_vecs]
-    else
-        ritz_v = ritz_v[:,sortperm(ritz_e)]
-        ritz_e = ritz_e[sortperm(ritz_e)]
-    end
-
-    solver.ritz_e = ritz_e
-    solver.ritz_v = ritz_v
-
-    solver.sig_prev = solver.sig_prev * ritz_v 
-    solver.vec_prev = solver.vec_prev * ritz_v
-    Hss = ritz_v' * Hss * ritz_v
-
-    res = deepcopy(solver.sig_prev[:,1:solver.nroots])
-    for s in 1:solver.nroots
-        res[:,s] .-= solver.vec_prev[:,s] * Hss[s,s]
-    end
-
-    
-    ss = deepcopy(solver.vec_prev)
-
-    new = zeros(solver.dim, 0) 
-    #solver.statusconv = [false for i in 1:solver.nroots]
-    for s in 1:solver.nroots
-        # |v'> = (I-|SS><SS|)|v>
-        #      = |v> - |SS><SS|V>
-        solver.resid[s] = norm(res[:,s])
-        if norm(res[:,s]) <= solver.tol
-            solver.status[s] = true
-            continue
-        else
-            solver.status[s] = false 
-        end
-        if Adiag != nothing
-            #level_shift = 1e-3
-            #denom = (ritz_e[s]  + level_shift)
-            tmp = deepcopy(res)
-            # apply_diagonal_precond!(res[:,s], Adiag, ritz_e[s])
-            # for i in 1:length(Adiag)
-            #     res[i,s] = res[i,s] / (ritz_e[s] - Adiag[i])
-            # end
-        end
-        scr = ss' * res[:,s]
-        res[:,s] .= res[:,s] .- (ss * scr)
-        nres = norm(res[:,s])
-        if nres > solver.tol
-            ss = hcat(ss,res[:,s]/nres)
-            new = hcat(new,res[:,s]/nres)
-        end
-    end
-    return new
-end
-
-#function iteration2(solver::Davidson, v_prev, v_curr, σ_prev; Adiag=nothing, iprint=0)
-function iteration2(solver::Davidson; Adiag=nothing, iprint=0, precond_start_thresh=1.0)
 
     # 
     # project out v_prev from v_curr
@@ -245,9 +162,6 @@ function iteration2(solver::Davidson; Adiag=nothing, iprint=0, precond_start_thr
     idx = sortperm(F.values)
 
     ss_size = min(size(solver.vec_prev,2), solver.max_ss_vecs)
-    if ss_size >= solver.max_ss_vecs
-        ss_size = solver.nroots
-    end
     
     idx = idx[1:ss_size]
 
@@ -290,19 +204,25 @@ function iteration2(solver::Davidson; Adiag=nothing, iprint=0, precond_start_thr
         end
     end
 
+
     res = res - solver.vec_prev * (solver.vec_prev' * res)
     return Matrix(qr(res).Q) 
 end
 
-function eigs(solver::Davidson; Adiag=nothing, iprint=0, precond_start_thresh=1.0)
+"""
+    eigs(solver::Davidson; Adiag=nothing, iprint=0, precond_start_thresh=1e-1)
+
+TBW
+"""
+function eigs(solver::Davidson; Adiag=nothing, iprint=0, precond_start_thresh=1e-1)
 
     for iter = 1:solver.max_iter
         #@btime $solver.vec_curr = $iteration($solver)
-        solver.vec_curr = iteration2(solver, Adiag=Adiag, iprint=iprint, precond_start_thresh=precond_start_thresh)
+        solver.vec_curr = iteration(solver, Adiag=Adiag, iprint=iprint, precond_start_thresh=precond_start_thresh)
         solver.iter_curr = iter
         print_iter(solver)
         if all(solver.status)
-            solver.converged == true
+            solver.converged = true
             break
         end
         if solver.lindep > solver.lindep_thresh && iter < solver.max_iter
@@ -321,12 +241,5 @@ function eigs(solver::Davidson; Adiag=nothing, iprint=0, precond_start_thresh=1.
     return solver.ritz_e[1:solver.nroots], solver.vec_prev[:,1:solver.nroots]
     #return solver.fritz_e[1:solver.nroots], solver.vec_prev*solver.ritz_v[:,1:solver.nroots]
 end
-
-#function orthogonalize!(solver)
-#
-#    # |vv_i>  = |v_i> - |w
-#    new_v = zeros(solver.dim, nroots)
-#    for r in 1:nroots
-#end
 
 end
