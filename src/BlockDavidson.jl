@@ -194,7 +194,7 @@ function iteration(solver::Davidson; Adiag=nothing, iprint=0, precond_start_thre
         # if Adiag != nothing && solver.status[s] == false
             tmp = deepcopy(res)
             for i in 1:length(Adiag)
-                res[i, s] = res[i, s] / (solver.ritz_e[s] - Adiag[i])
+                res[i, s] = res[i, s] / (solver.ritz_e[s] - Adiag[i] + 1e-12)
                 # if abs(solver.ritz_e[s] - Adiag[i]) < solver.tol
                 #     res[i,s] = 0
                 # else
