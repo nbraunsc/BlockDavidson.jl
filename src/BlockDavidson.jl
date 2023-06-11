@@ -51,7 +51,7 @@ function Davidson(op;
 
     size(op)[1] == size(op)[2] || throw(DimensionMismatch)
     dim = size(op)[1]
-    if v0==nothing
+    if v0===nothing
         F = qr(rand(T, dim,nroots))
         v0 = Matrix(F.Q)
     else
@@ -190,7 +190,7 @@ function iteration(solver::Davidson; Adiag=nothing, iprint=0, precond_start_thre
         else
             solver.status[s] = false 
         end
-        if Adiag != nothing && solver.status[s] == false && solver.resid[s] < precond_start_thresh 
+        if Adiag !== nothing && solver.status[s] == false && solver.resid[s] < precond_start_thresh 
         # if Adiag != nothing && solver.status[s] == false
             tmp = deepcopy(res)
             for i in 1:length(Adiag)
@@ -226,7 +226,8 @@ function eigs(solver::Davidson; Adiag=nothing, iprint=0, precond_start_thresh=1e
             break
         end
         if solver.lindep > solver.lindep_thresh && iter < solver.max_iter
-            @warn "Linear dependency detected. Restarting."
+            # @warn "Linear dependency detected. Restarting."
+            println(" Linear dependency detected. Restarting.")
             flush(stdout)
             F = qr(solver.vec_prev[:,1:solver.nroots])
             solver.vec_curr = Matrix(F.Q)
