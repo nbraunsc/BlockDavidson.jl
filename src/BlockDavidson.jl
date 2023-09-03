@@ -30,24 +30,24 @@ end
 
 """
     Davidson(op; 
-    max_iter=100, 
-    max_ss_vecs=8, 
-    tol=1e-8, 
-    nroots=1, 
-    v0=nothing, 
-    lindep_thresh=1e-10, 
-    T=Float64)
+                        max_iter=100, 
+                        max_ss_vecs=8, 
+                        tol=1e-8, 
+                        nroots=1, 
+                        v0=nothing, 
+                        lindep_thresh=1e-10, 
+                        T=Float64)
 
 TBW
 """
 function Davidson(op; 
-    max_iter=100, 
-    max_ss_vecs=8, 
-    tol=1e-8, 
-    nroots=1, 
-    v0=nothing, 
-    lindep_thresh=1e-10, 
-    T=Float64)
+                        max_iter=100, 
+                        max_ss_vecs=8, 
+                        tol=1e-8, 
+                        nroots=1, 
+                        v0=nothing, 
+                        lindep_thresh=1e-10, 
+                        T=Float64)
 
     size(op)[1] == size(op)[2] || throw(DimensionMismatch)
     dim = size(op)[1]
@@ -79,21 +79,16 @@ function Davidson(op;
                     lindep_thresh)
 end
 
-mutable struct LinOpMat{T} <: AbstractMatrix{T} 
-    matvec
-    dim::Int
-    sym::Bool
-end
-
-Base.size(lop::LinOpMat{T}) where {T} = return (lop.dim,lop.dim)
-Base.:(*)(lop::LinOpMat{T}, v::AbstractVector{T}) where {T} = return lop.matvec(v)
-Base.:(*)(lop::LinOpMat{T}, v::AbstractMatrix{T}) where {T} = return lop.matvec(v)
-issymmetric(lop::LinOpMat{T}) where {T} = return lop.sym
     
 
 
 
-function print_iter(solver::Davidson)
+"""
+    print_iter(solver::Davidson{T}) where T<:Real
+
+TBW
+"""
+function print_iter(solver::Davidson{T}) where T<:Real
     @printf(" Iter: %3i SS: %-4i", solver.iter_curr, size(solver.vec_prev)[2])
     @printf(" E: ")
     for i in 1:solver.nroots
@@ -113,6 +108,36 @@ function print_iter(solver::Davidson)
     end
     @printf(" LinDep: ")
     @printf("%5.1e* ", solver.lindep)
+    println("")
+    flush(stdout)
+end
+
+
+"""
+    print_iter(solver::Davidson{T}) where T<:Real
+
+TBW
+"""
+function print_iter(solver::Davidson{T}) where T<:Complex
+    @printf(" Iter: %3i SS: %-4i", solver.iter_curr, size(solver.vec_prev)[2])
+    @printf(" E: ")
+    for i in 1:solver.nroots
+        if solver.status[i]
+            @printf("%13.8f %13.8fim* ", real(solver.ritz_e[i]), imag(solver.ritz_e[i]))
+        else
+            @printf("%13.8f %13.8fim  ", real(solver.ritz_e[i]), imag(solver.ritz_e[i]))
+        end
+    end
+    @printf(" R: ")
+    for i in 1:solver.nroots
+        if solver.status[i]
+            @printf("%5.1e* ", abs(solver.resid[i]))
+        else
+            @printf("%5.1e  ", abs(solver.resid[i]))
+        end
+    end
+    @printf(" LinDep: ")
+    @printf("%5.1e* ", abs(solver.lindep))
     println("")
     flush(stdout)
 end
@@ -159,7 +184,8 @@ function iteration(solver::Davidson; Adiag=nothing, iprint=0, precond_start_thre
     # form H in current subspace
     Hss = solver.vec_prev' * solver.sig_prev
     F = eigen(Hss)
-    idx = sortperm(F.values)
+    # idx = sortperm(F.values)
+    idx = sortperm([(real(i), imag(i)) for i in F.values])      # extend for complex values
 
     ss_size = min(size(solver.vec_prev,2), solver.max_ss_vecs)
     
