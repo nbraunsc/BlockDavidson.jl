@@ -237,7 +237,6 @@ function eigs(solver::Davidson; Adiag=nothing, iprint=0, precond_start_thresh=1e
         #@btime $solver.vec_curr = $iteration($solver)
         solver.vec_curr = iteration(solver, Adiag=Adiag, iprint=iprint, precond_start_thresh=precond_start_thresh)
         solver.iter_curr = iter
-        print_iter(solver)
         if all(solver.status)
             solver.converged = true
             break
